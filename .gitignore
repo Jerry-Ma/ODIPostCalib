@@ -1,0 +1,6 @@
+*.pyc
+extern/*
+!extern/setup_*.sh
+!extern/__init__.py
+logs/*
+demo_data/*
