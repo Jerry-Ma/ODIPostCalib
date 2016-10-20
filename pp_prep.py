@@ -13,7 +13,6 @@ import os
 from extern.apus.utils import get_main_config
 from extern.apus.utils import default_to_main_config
 from extern.apus.utils import tlist_wrapper
-from recipes.apply_ota_mask import check_if_uptodate
 
 
 @default_to_main_config
@@ -67,6 +66,17 @@ def tlist(inglob, inreg):
             extras=os.path.abspath(conf.ota_flag_file),
             in_=(inglob, inreg),
             out='masked_{id[0]}_{name[0]}_odi_{band[0]}.fits',
-            check_if_uptodate=check_if_uptodate,
             )
-    return tlist_wrapper([t1, t2, t3, t4, t5], 'masked_*.fits', inreg)
+    t6 = dict(
+            name='select initial',
+            func='python -u recipes/link_images.py {in} {out}',
+            pipe='transform',
+            in_=(inglob, inreg),
+            add_inputs=t5['out'],
+            extras=[os.path.abspath(conf.ota_flag_file),
+                    'linked_{id[0]}_{name[0]}_odi_{band[0]}.fits',
+                    ],
+            out='select_initial_{id[0]}_{name[0]}_odi_{band[0]}.success',
+            follows=t5,
+            )
+    return tlist_wrapper([t1, t2, t3, t4, t5, t6], 'masked_*.fits', inreg)

@@ -13,7 +13,7 @@ data to improve the astrometry and photometry
 
     * python packages (available from pip):
 
-        `numpy scipy matplotlib astropy astroquery ruffus bottleneck multiprocess requests`
+        `numpy scipy matplotlib astropy astroquery ruffus bottleneck multiprocess requests cycler wcsaxes`
 
     * python packages (home baked)
 

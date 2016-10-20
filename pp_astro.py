@@ -9,15 +9,18 @@ pp_astro.py
 """
 
 
-# import os
+import os
 from extern.apus.utils import get_main_config
 from extern.apus.utils import default_to_main_config
 from extern.apus.utils import tlist_wrapper
 
 
 @default_to_main_config
-def tlist(inglob, inreg):
-    # inglob = 'masked_*.fits'
+def tlist(dummy, inreg):
+    inflag = 'masked'
+    inglob = 'masked_*odi_?.fits'
+    # goodflag = 'linked'
+    goodglob = 'linked_*odi_?.fits'
     conf = get_main_config()
     t10 = dict(
             name='sex for astrometry',
@@ -79,46 +82,45 @@ def tlist(inglob, inreg):
             out='scamp_sdss.fits',
             follows='merge catalogs',
             )
+    if conf.scamp_config['ASTREF_CATALOG'] == 'FILE':
+        t30_follows = [t13, t21]
+    else:
+        t30_follows = t13
     t30 = dict(
             name='scamp',
             func='scamp',
             pipe='collate',
-            in_=(inglob, inreg),
-            add_inputs='scamp_{imflag[0]}_{id[0]}_{name[0]}'
-            '_odi_{band[0]}.fits',
-            # u band perseus
+            in_=(goodglob, inreg),
+            add_inputs='scamp_%s_{id[0]}_{name[0]}'
+            '_odi_{band[0]}.fits' % (inflag),
             extras=t21['out'],
-            # extras=[os.path.abspath('./2MASS_0319+4131_r40.cat'), ],
-            # extras=[os.path.abspath('./SDSS-R9_0319+4131_r35.cat'), ],
             in_keys=[('dummy', 'in'), 'ASTREFCAT_NAME'],
-            # in_keys=[('dummy', 'in'), ],
-            params={
-                # 'ASTREF_CATALOG': '2MASS',
-                # 'ASTREF_CATALOG': 'SDSS-R9',
-                'ASTREF_CATALOG': 'FILE',
-                'SOLVE_PHOTOM': 'N',
-                'AHEADER_GLOBAL': 'extern/z03_1.ahead',
-                'HEADER_SUFFIX': '.hdr_astro',
-                # 'MOSAIC_TYPE': 'UNCHANGED',
-                # 'MOSAIC_TYPE': 'LOOSE',
-                # 'MOSAIC_TYPE': 'FIX_FOCALPLANE',
-                'MOSAIC_TYPE': 'SAME_CRVAL',
-                # 'HEADER_TYPE': 'FOCAL_PLANE',
-                'DISTORT_DEGREES': 3,
-                'POSANGLE_MAXERR': 1.0,
-                'POSITION_MAXERR': 5.0,
-                'CHECKPLOT_RES': 2048,
-                'CROSSID_RADIUS': 1.2,
-                'MAGZERO_OUT': 25,
-                'MERGEDOUTCAT_NAME': 'merged.cat',
+            params=dict(conf.scamp_config, **{
+                'MERGEDOUTCAT_NAME': os.path.join(conf.confdir, 'merged.cat'),
                 'MERGEDOUTCAT_TYPE': 'FITS_LDAC',
-                # 'ASTREFCENT_KEYS': 'ALPHA_J2000,DELTA_J2000'
-                # 'VERBOSE_TYPE': 'FULL'
-                },
-            follows=[t13, t21],
+                'REFOUT_CATPATH': conf.confdir,
+                'HEADER_SUFFIX': '.hdr_astro',
+                'WRITE_XML': 'Y',
+                'XML_NAME': os.path.join(conf.jobdir, 'scamp.xml'),
+                }),
+            follows=t30_follows
+            )
+    t31 = dict(
+            name='create swarp header',
+            func='python -u recipes/create_swarp_header.py {in} {out}',
+            pipe='transform',
+            in_=(goodglob, inreg),
+            replace_inputs=[
+                'scamp_%s_{id[0]}_{name[0]}_odi_{band[0]}'
+                '.hdr_astro' % (inflag),
+                'scamp_%s_{id[0]}_{name[0]}_odi_{band[0]}'
+                '.hdr_astro' % (inflag),
+                ],
+            out='{basename[0]}.hdr_swarp',
+            follows=t30,
             )
     return tlist_wrapper([
         t10, t11, t12, t13,
         t20, t21,
-        t30,
-        ], inglob, inreg)
+        t30, t31,
+        ], goodglob, inreg)

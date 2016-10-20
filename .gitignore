@@ -1,4 +1,5 @@
 *.pyc
+*.bak
 extern/*
 !extern/setup_*.sh
 !extern/__init__.py

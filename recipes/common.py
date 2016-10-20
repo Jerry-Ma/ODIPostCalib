@@ -9,6 +9,8 @@ common.py
 """
 
 
+import os
+import glob
 from astropy.io import fits
 from extern.pyjerry.instrument import wiyn
 import numpy as np
@@ -74,3 +76,33 @@ def combine_odi(in_files, combfunc, scalefunc, exts=None, jobs=1):
                     [combfunc, ] * len(exts)),
                 ).get(9999999)
     return ret
+
+
+def get_image_flag(in_file, flag_file):
+    chips = []
+    with open(flag_file, 'r') as fo:
+        for ln in fo.readlines():
+            ln = ln.strip()
+            if not ln or ln.startswith('#'):
+                continue
+            ln = ln.split('#', 1)[0].strip().split()  # remove in line comment
+            if len(ln) < 2:
+                continue
+            else:
+                if ln[0] == '*':
+                    chips.extend(map(int, ln[1:]))
+                else:
+                    match = [f for f in glob.glob(ln[0])
+                             if os.path.samefile(f, in_file)]
+                    if len(match) == 1:
+                        if ln[1] == '*':
+                            chips.append(-1)
+                        else:
+                            chips.extend(map(int, ln[1:]))
+                        break
+                    elif len(match) == 0:
+                        continue
+                    else:
+                        raise RuntimeError('unable to get image flag for {0}'
+                                           .format(in_file))
+    return list(set(chips))

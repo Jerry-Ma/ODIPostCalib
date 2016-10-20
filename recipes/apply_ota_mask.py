@@ -10,12 +10,12 @@ apply_ota_mask.py
 
 
 import os
-import glob
 import re
 import numpy as np
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 from common import open_with_meta
+from common import get_image_flag
 
 
 def apply_bpmask(data, otaxy, layout):
@@ -47,50 +47,6 @@ def apply_bpmask(data, otaxy, layout):
     return data
 
 
-def get_mask_ota(in_file, flag_file):
-    otas = []
-    with open(flag_file, 'r') as fo:
-        for ln in fo.readlines():
-            ln = ln.strip()
-            if not ln or ln.startswith('#'):
-                continue
-            ln = ln.strip().split()
-            if len(ln) < 2:
-                continue
-            else:
-                if ln == '*':
-                    otas.extend(map(int, ln[1:]))
-                else:
-                    match = [f for f in glob.glob(ln[0])
-                             if os.path.samefile(f, in_file)]
-                    if len(match) == 1:
-                        if ln[1] == '*':
-                            otas.append(-1)
-                        else:
-                            otas.extend(map(int, ln[1:]))
-                    elif len(match) == 0:
-                        continue
-                    else:
-                        raise RuntimeError('unable to get OTA mask for {0}'
-                                           .format(in_file))
-    return otas
-
-
-def check_if_uptodate(*args):
-    in_file, out_file, flag_file, task = args
-    if not os.path.exists(flag_file):
-        return True, "no flag file found"
-    otas = get_mask_ota(in_file, flag_file)
-    if -1 in otas:
-        return False, "blacklisted file {0}".format(in_file)
-    else:
-        if not os.path.exists(out_file):
-            return True, "no out_file found"
-        else:
-            return os.path.getmtime(in_file) > os.path.getmtime(out_file), \
-                "outdated file mtime"
-
-
 if __name__ == "__main__":
 
     import sys
@@ -102,12 +58,10 @@ if __name__ == "__main__":
         print "create empty flag file: {0}".format(flag_file)
         with open(flag_file, 'a'):
             os.utime(flag_file, None)
-    otas = get_mask_ota(in_file, flag_file)
-    if -1 in otas:
-        print "mask ota {0} for {1}, discard".format(otas, in_file)
-        sys.exit(0)
-    print "mask ota {0} for {1}".format(otas, in_file)
-
+    otas = get_image_flag(in_file, flag_file)
+    # for now ignore -1 flag, which will be handled by link_images.py
+    otas = [i for i in otas if i != -1]
+    print 'mask:', otas
     hdulist, exts, layout = open_with_meta(in_file)
     print "focal plane layout: {0}".format(layout)
 

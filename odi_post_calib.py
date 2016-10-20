@@ -15,8 +15,8 @@ for post-QR calibration of WIYN ODI data
 import os
 import pp_prep
 import pp_astro
-# import pp_mosaic
-# import pp_photometry
+import pp_mosaic
+import pp_photometry
 from extern.apus import core
 from extern.apus.utils import get_main_config
 
@@ -45,6 +45,42 @@ input_glob = '20??????T*/*odi_{0}.????.fits'.format(band)
 # filenames; no need to change
 input_reg = (r'.+(?P<id>20\d{6}T\d{6}\.\d)_(?P<name>\w+)_odi_(?P<band>\w)'
              r'\.(?P<qr>\d{4})/.+\.fits')
+
+
+# scamp config
+# used for generating scamp configuration on the fly
+# generated config file is in jobdir/config/conf.scamp
+scamp_config = {
+    # ### clean sdss catalog using sql query adapted from Ralf QR
+    'ASTREF_CATALOG': 'FILE',
+    # ### SCAMP built-in SDSS
+    # 'ASTREF_CATALOG': 'SDSS-R9',
+    # ### SCAMP built-in 2MASS
+    # 'ASTREF_CATALOG': '2MASS',
+    'AHEADER_GLOBAL': 'extern/z03_1.ahead',
+    'MOSAIC_TYPE': 'SAME_CRVAL',
+    # 'HEADER_TYPE': 'FOCAL_PLANE',
+    'DISTORT_DEGREES': 3,
+    'POSANGLE_MAXERR': 1.0,
+    'POSITION_MAXERR': 5.0,
+    'CHECKPLOT_RES': 2048,
+    'CROSSID_RADIUS': 1.2,
+    'SOLVE_PHOTOM': 'Y',
+    'MAGZERO_OUT': 25,
+    }
+
+# swarp config
+# used for generating swarp configuration on the fly
+# generated config file is in jobdir/config/conf.swarp
+swarp_config = {
+    'PIXELSCALE_TYPE': 'MANUAL',
+    'PIXEL_SCALE': 0.20,
+    'HEADER_SUFFIX': '.none',  # to be overridden
+    'FSCALE_DEFAULT': 99,  # for rejecting failed phot calib image
+    'BACK_SIZE': 64,
+    'DELETE_TMPFILES': 'Y',
+    }
+
 # ### end of basic config
 
 
@@ -91,8 +127,7 @@ conf.inputs = (
     os.path.join(conf.jobdir, input_fmt)
     )
 pp_prep.tlist().chain(
-    pp_astro.tlist)
-# .chain(
-#         pp_mosaic.tlist).chain(
-#             pp_photometry.tlist)
+    pp_astro.tlist).chain(
+        pp_mosaic.tlist).chain(
+            pp_photometry.tlist)
 core.bootstrap()
