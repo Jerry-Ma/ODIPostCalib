@@ -13,6 +13,7 @@ import os
 from extern.apus.utils import get_main_config
 from extern.apus.utils import default_to_main_config
 from extern.apus.utils import tlist_wrapper
+import glob
 
 
 @default_to_main_config
@@ -84,8 +85,17 @@ def tlist(dummy, inreg):
             )
     if conf.scamp_config['ASTREF_CATALOG'] == 'FILE':
         t30_follows = [t13, t21]
+        t30_extras = t21['out']
+    # tries to make use of the saved catalog
     else:
         t30_follows = t13
+        t30_extras = glob.glob(os.path.join(
+            conf.confdir, '{0}_*_r*.cat'.format(
+                conf.scamp_config['ASTREF_CATALOG'])))
+        if len(t30_extras) > 0:
+            t30_extras = os.path.abspath(
+                    sorted(t30_extras, key=os.path.getctime)[-1])
+            conf.scamp_config['ASTREF_CATALOG'] = 'FILE'
     t30 = dict(
             name='scamp',
             func='scamp',
@@ -93,7 +103,7 @@ def tlist(dummy, inreg):
             in_=(goodglob, inreg),
             add_inputs='scamp_%s_{id[0]}_{name[0]}'
             '_odi_{band[0]}.fits' % (inflag),
-            extras=t21['out'],
+            extras=t30_extras,
             in_keys=[('dummy', 'in'), 'ASTREFCAT_NAME'],
             params=dict(conf.scamp_config, **{
                 'MERGEDOUTCAT_NAME': os.path.join(conf.confdir, 'merged.cat'),
@@ -119,8 +129,15 @@ def tlist(dummy, inreg):
             out='{basename[0]}.hdr_swarp',
             follows=t30,
             )
+    t32 = dict(
+            name='plot dist stability',
+            func='python -u recipes/plot_distortion.py {in} {out} 1',
+            in_=t31,
+            pipe='merge',
+            out='fig_scamp_distortion.eps'
+            )
     return tlist_wrapper([
         t10, t11, t12, t13,
         t20, t21,
-        t30, t31,
+        t30, t31, t32
         ], goodglob, inreg)

@@ -29,7 +29,7 @@ def tlist(inglob, inreg):
             name='swarp with astro',
             func='swarp',
             pipe='collate',
-            in_=(inglob, inreg),
+            in_=(conf.tlist[-1], inreg),
             add_inputs='{imflag[0]}_{id[0]}_'
             '{name[0]}_odi_{band[0]}.fits',
             in_keys=[('dummy', 'in'), ],

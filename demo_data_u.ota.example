@@ -1,0 +1,17 @@
+* 51  # used for guiding
+u/demo_data/ppa_20151202T204534.1_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T205723.1_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T205723.2_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T213240.1_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T213240.2_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T213240.3_Perseus_odi_u_odi_u.fits *  # bad seeing
+u/demo_data/ppa_20151202T213240.4_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151202T213240.5_Perseus_odi_u_odi_u.fits *  # bad seeing
+u/demo_data/ppa_20151202T213240.6_Perseus_odi_u_odi_u.fits *  # bad seeing
+u/demo_data/ppa_20151203T011343.1_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151203T012705.1_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151203T012705.2_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151203T012705.3_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151203T012705.4_Perseus_odi_u_odi_u.fits
+u/demo_data/ppa_20151203T033402.1_Perseus_odi_u_odi_u.fits *  # bad seeing
+u/demo_data/ppa_20151203T034626.1_Perseus_odi_u_odi_u.fits *  # bad seeing

@@ -21,7 +21,7 @@ from extern.apus import core
 from extern.apus.utils import get_main_config
 
 
-# ### basic config
+# --- basic config
 # name for the dataset; will be used as the name of your work directory
 runkey = 'demo_data'
 
@@ -47,29 +47,36 @@ input_reg = (r'.+(?P<id>20\d{6}T\d{6}\.\d)_(?P<name>\w+)_odi_(?P<band>\w)'
              r'\.(?P<qr>\d{4})/.+\.fits')
 
 
-# scamp config
+# --- scamp config
 # used for generating scamp configuration on the fly
 # generated config file is in jobdir/config/conf.scamp
 scamp_config = {
-    # ### clean sdss catalog using sql query adapted from Ralf QR
+    # --- clean sdss catalog using sql query adapted from Ralf QR
     'ASTREF_CATALOG': 'FILE',
-    # ### SCAMP built-in SDSS
+    # --- SCAMP built-in SDSS
     # 'ASTREF_CATALOG': 'SDSS-R9',
-    # ### SCAMP built-in 2MASS
+    # --- SCAMP built-in 2MASS
     # 'ASTREF_CATALOG': '2MASS',
-    'AHEADER_GLOBAL': 'extern/z03_1.ahead',
+    # --- ahead file with only CRPIXs and CD matrix
+    # 'AHEADER_GLOBAL': 'extern/raw_odi.ahead',
+    # --- ahead file derived from Perseus u band data using SCAMP option LOOSE
+    'AHEADER_GLOBAL': 'extern/u_2.ahead',
+    # --- ahead file derived from Bootes z band data using SCAMP option LOOSE
+    # 'AHEADER_GLOBAL': 'extern/z03_1.ahead',
     'MOSAIC_TYPE': 'SAME_CRVAL',
+    # --- useful for deriving ahead file
+    # 'MOSAIC_TYPE': 'LOOSE',
     # 'HEADER_TYPE': 'FOCAL_PLANE',
     'DISTORT_DEGREES': 3,
-    'POSANGLE_MAXERR': 1.0,
-    'POSITION_MAXERR': 5.0,
+    'POSANGLE_MAXERR': 2.0,
+    'POSITION_MAXERR': 10.0,
     'CHECKPLOT_RES': 2048,
-    'CROSSID_RADIUS': 1.2,
+    'CROSSID_RADIUS': 2.0,
     'SOLVE_PHOTOM': 'Y',
     'MAGZERO_OUT': 25,
     }
 
-# swarp config
+# --- swarp config
 # used for generating swarp configuration on the fly
 # generated config file is in jobdir/config/conf.swarp
 swarp_config = {
@@ -81,10 +88,10 @@ swarp_config = {
     'DELETE_TMPFILES': 'Y',
     }
 
-# ### end of basic config
+# --- end of basic config
 
 
-# ### advanced config
+# --- advanced config
 # generate jobkeys and work dir layouts; no need to change
 conf = get_main_config()
 conf.jobkey = '_'.join([runkey, band])
@@ -95,7 +102,8 @@ conf.task_io_default_dir = conf.jobdir
 conf.bright_star_mag = bright_star_mag
 conf.calib_mag_range = calib_mag_range
 
-# refer to readme for more explanations on path_prefix
+# for astromatic software paths; refer to readme for more
+# explanations on path_prefix
 conf.env_overrides = {
         # this is to let apus know where the astromatic softwares are
         'path_prefix': 'extern/astromatic',
@@ -115,8 +123,8 @@ conf.ota_flag_file = conf.jobkey + '.ota'
 # no need to change
 input_fmt = 'ppa_{id[0]}_{name[0]}_odi_{band[0]}.fits'
 conf.inglob = 'ppa_*odi_?.fits'
-conf.inreg = (r'(?P<prefix>[^_]+_)?'
-              r'(?P<imflag>[^_]+)_'
+conf.inreg = (r'(?P<prefix>[^_/]+_)?'
+              r'(?P<imflag>[^_/]+)_'
               r'(?P<id>20\d{6}T\d{6}\.\d)_(?P<name>.+)'
               r'_odi_(?P<band>\w)\.(?P<ext>.+)')
 
